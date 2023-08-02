@@ -1,16 +1,21 @@
+require('dotenv').config();
 const bodyParser = require('body-parser');
 const express =require('express');
+const cors = require('cors');
 const mongoose =require('mongoose');
 
 const app= express();
 const PORT=3001;
-
+const url=process.env.ATLAS_URI;
 //connecting to mongodb database
-mongoose.connect('mongodb+srv://Lalitha:7X6oL5r8FMCGJPSR@cluster0.iyiyrqz.mongodb.net/',{useNewUrlParser: true, useUnifiedTopology:true})
+mongoose.connect(url,{useNewUrlParser: true, useUnifiedTopology:true})
     .then(()=> console.log('connected to mongodb'))
     .catch(err=> console.error('Error connecting to mongodb',err));
+// Use CORS middleware
+  app.use(cors());
 
-    app.use(bodyParser.json());
+  app.use(bodyParser.json());
+    
 
     //defining model
 const mentorSchema = new mongoose.Schema({
@@ -147,6 +152,27 @@ app.put('/students/:studentId/mentor', async (req, res) => {
       res.status(500).json({ message: 'Error fetching previous mentor for student' });
     }
   });
+
+  // Get all mentors
+app.get('/mentors', async (req, res) => {
+    try {
+      const mentors = await Mentor.find();
+      res.status(200).json(mentors);
+    } catch (err) {
+      res.status(500).json({ message: 'Error fetching mentors' });
+    }
+  });
+  
+  // Get all students
+  app.get('/students', async (req, res) => {
+    try {
+      const students = await Student.find();
+      res.status(200).json(students);
+    } catch (err) {
+      res.status(500).json({ message: 'Error fetching students' });
+    }
+  });
+  
 
     //to start the server
     app.listen(PORT,()=>{
